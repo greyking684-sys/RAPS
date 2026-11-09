@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role-based access control for plant operators and administrators",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["admin", "managing_director", "supervisor", "operator", "viewer"] },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "ShiftReport": {
+      "title": "ShiftReport",
+      "description": "Industrial manufacturing shift report containing machine performance metrics, OEE, downtime, scrap, and notes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "maxLength": 32 },
+        "shift": { "type": "string", "enum": ["day", "night"] },
+        "hrs": { "type": "number" },
+        "leader": { "type": "string", "maxLength": 128 },
+        "notes": { "type": "array" },
+        "flags": { "type": "array" },
+        "ms": { "type": "array" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "date", "shift", "hrs", "leader", "ms"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Designated administrator identifier document",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 256 },
+        "assignedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile records containing roles and display names"
+    },
+    "/reports/{reportId}": {
+      "schema": "ShiftReport",
+      "description": "Production shift reports synchronizing OEE and machine data across plant devices"
+    },
+    "/admins/{userId}": {
+      "schema": "AdminRecord",
+      "description": "List of system administrators with upload and management permissions"
+    }
+  }
+}

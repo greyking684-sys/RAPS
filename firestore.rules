@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny catch-all safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Admin is either the bootstrap user (shaemachaka@gmail.com) or an explicitly recorded admin UID document
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'shaemachaka@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Validation for UserProfile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.keys().hasOnly(['uid', 'email', 'displayName', 'role', 'createdAt']) &&
+             data.uid is string && data.uid.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             (data.role == 'admin' || data.role == 'managing_director' || data.role == 'supervisor' || data.role == 'operator' || data.role == 'viewer') &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128)) &&
+             (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
+    }
+
+    // Validation for ShiftReport
+    function isValidShiftReport(data) {
+      return data.keys().hasAll(['id', 'date', 'shift', 'hrs', 'leader', 'ms']) &&
+             data.id is string && data.id.size() <= 64 &&
+             data.date is string && data.date.size() <= 32 &&
+             (data.shift == 'day' || data.shift == 'night') &&
+             data.hrs is number && data.hrs > 0 && data.hrs <= 24 &&
+             data.leader is string && data.leader.size() <= 128 &&
+             data.ms is list && data.ms.size() <= 50;
+    }
+
+    // Admins collection: defines designated administrators
+    match /admins/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Users collection: user profiles and roles
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().uid == request.auth.uid &&
+                       (incoming().role != 'admin' || isAdmin());
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().uid == existing().uid &&
+                       (isAdmin() || (
+                         request.auth.uid == userId &&
+                         incoming().role == existing().role &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['displayName'])
+                       ));
+      allow delete: if isAdmin();
+    }
+
+    // Reports collection: plant shift records, OEE metrics, and downtime
+    match /reports/{reportId} {
+      // Read access allowed for all factory monitors, operators, and signed-in users
+      allow get, list: if true;
+
+      // Only administrators can create, update, or delete production shift reports
+      allow create: if isAdmin() &&
+                       isValidId(reportId) &&
+                       isValidShiftReport(incoming()) &&
+                       incoming().id == reportId;
+
+      allow update: if isAdmin() &&
+                       isValidId(reportId) &&
+                       isValidShiftReport(incoming()) &&
+                       incoming().id == existing().id;
+
+      allow delete: if isAdmin() && isValidId(reportId);
+    }
+  }
+}

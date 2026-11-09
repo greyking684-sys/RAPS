@@ -1,0 +1,6 @@
+{
+  "name": "Rig & Plant Services OEE Tracker",
+  "description": "Rig & Plant Services OEE & Production Platform — live shift telemetry, downtime tracking, OEE analytics, and WhatsApp handover report ingestion for industrial manufacturing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

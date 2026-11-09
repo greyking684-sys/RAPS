@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Rig &amp; Plant Services OEE Tracker</title>
+    <meta name="description" content="Rig & Plant Services OEE & Production Platform — live shift telemetry, downtime tracking, OEE analytics, and WhatsApp handover report ingestion for industrial manufacturing." />
+    <meta property="og:title" content="Rig & Plant Services OEE Tracker" />
+    <meta property="og:description" content="Rig & Plant Services OEE & Production Platform — live shift telemetry, downtime tracking, OEE analytics, and WhatsApp handover report ingestion for industrial manufacturing." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <script>
+      // Gracefully silence Vite development WebSocket/HMR disconnect errors in sandbox iframe environments
+      window.addEventListener('error', function (e) {
+        if (e && e.message && (e.message.includes('WebSocket') || e.message.includes('@vite/client') || e.message.includes('ws://') || e.message.includes('wss://'))) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        if (e && e.reason && String(e.reason).includes('WebSocket')) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      });
+    </script>
+    
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Rig OEE" />
+    
+    <!-- App Icons -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  </head>
+  <body class="bg-slate-100 dark:bg-[#0b0f17] text-slate-900 dark:text-slate-100 antialiased selection:bg-blue-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
